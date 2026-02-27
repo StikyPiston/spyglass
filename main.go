@@ -38,6 +38,9 @@ type model struct {
 
 	width  int
 	height int
+
+	// Cache entries for lazyloading
+	loadedEntries map[int][]lens.Entry
 }
 
 func newModel() model {
@@ -47,21 +50,31 @@ func newModel() model {
 	ti.CharLimit = 256
 
 	m := model{
-		lenses: Lenses,
-		search: ti,
+		lenses:        Lenses,
+		search:        ti,
+		loadedEntries: make(map[int][]lens.Entry),
+		selected:      0,
+		scroll:        0,
+		state:         stateEntries,
 	}
 	m.refresh()
 	return m
 }
 
 func (m *model) refresh() {
-	entries, _ := m.lenses[m.activeLens].Search(m.search.Value())
-	m.entries = entries
-	if m.selected >= len(entries) {
-		m.selected = len(entries) - 1
-	}
-	if m.selected < 0 {
-		m.selected = 0
+	// Only load the active Lens
+	if m.state == stateEntries {
+		if _, ok := m.loadedEntries[m.activeLens]; !ok || m.search.Value() != "" {
+			entries, _ := m.lenses[m.activeLens].Search(m.search.Value())
+			m.loadedEntries[m.activeLens] = entries
+		}
+		m.entries = m.loadedEntries[m.activeLens]
+		if m.selected >= len(m.entries) {
+			m.selected = len(m.entries) - 1
+		}
+		if m.selected < 0 {
+			m.selected = 0
+		}
 	}
 }
 
@@ -134,11 +147,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state == stateEntries && len(m.entries) > 0 {
 				entry := m.entries[m.selected]
 				m.lenses[m.activeLens].Enter(entry)
+				return m, tea.Quit
 			} else if m.state == stateContext && len(m.actions) > 0 {
 				m.actions[m.contextSelected].Run(m.contextFor)
 				m.state = stateEntries
 				m.selected = 0
 				m.scroll = 0
+				return m, tea.Quit
 			}
 
 		case tea.KeyEsc:

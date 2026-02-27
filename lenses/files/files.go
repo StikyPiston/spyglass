@@ -10,8 +10,9 @@ import (
 )
 
 type filesLens struct {
-	files []string
-	home  string
+	files   []string
+	home    string
+	indexed bool
 }
 
 func New() lens.Lens {
@@ -19,7 +20,6 @@ func New() lens.Lens {
 	l := &filesLens{
 		home: home,
 	}
-	l.index()
 	return l
 }
 
@@ -37,6 +37,12 @@ func (f *filesLens) index() {
 }
 
 func (f *filesLens) Search(query string) ([]lens.Entry, error) {
+	// Lazy indexing
+	if !f.indexed {
+		f.index()
+		f.indexed = true
+	}
+
 	var results []lens.Entry
 	query = strings.ToLower(query)
 
