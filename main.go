@@ -25,12 +25,16 @@ type model struct {
 
 	search textinput.Model
 
-	entries    []lens.Entry
-	selected   int
-	scroll     int
-	state      viewState
-	actions    []lens.Action
-	contextFor lens.Entry
+	entries  []lens.Entry
+	selected int
+	scroll   int
+	state    viewState
+
+	// Context menu fields
+	actions         []lens.Action
+	contextFor      lens.Entry
+	contextSelected int
+	contextScroll   int
 
 	width  int
 	height int
@@ -74,44 +78,56 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.Type {
+
 		case tea.KeyCtrlC:
 			return m, tea.Quit
 
 		case tea.KeyTab:
+			// Switch lens
 			m.activeLens--
 			if m.activeLens < 0 {
 				m.activeLens = len(m.lenses) - 1
 			}
+			m.state = stateEntries
 			m.selected = 0
 			m.scroll = 0
-			m.state = stateEntries
 			m.refresh()
 
 		case tea.KeyShiftTab:
+			// Open context menu
 			if m.state == stateEntries && len(m.entries) > 0 {
 				entry := m.entries[m.selected]
-				m.contextFor = entry
-				m.actions = m.lenses[m.activeLens].ContextActions(entry)
-				if len(m.actions) > 0 {
+				actions := m.lenses[m.activeLens].ContextActions(entry)
+
+				if len(actions) > 0 {
+					m.contextFor = entry
+					m.actions = actions
 					m.state = stateContext
-					m.selected = 0
+					m.contextSelected = 0
+					m.contextScroll = 0
 				}
 			}
 
 		case tea.KeyUp:
-			if m.selected > 0 {
-				m.selected--
+			if m.state == stateEntries {
+				if m.selected > 0 {
+					m.selected--
+				}
+			} else if m.state == stateContext {
+				if m.contextSelected > 0 {
+					m.contextSelected--
+				}
 			}
 
 		case tea.KeyDown:
-			max := 0
 			if m.state == stateEntries {
-				max = len(m.entries) - 1
-			} else {
-				max = len(m.actions) - 1
-			}
-			if m.selected < max {
-				m.selected++
+				if m.selected < len(m.entries)-1 {
+					m.selected++
+				}
+			} else if m.state == stateContext {
+				if m.contextSelected < len(m.actions)-1 {
+					m.contextSelected++
+				}
 			}
 
 		case tea.KeyEnter:
@@ -119,14 +135,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				entry := m.entries[m.selected]
 				m.lenses[m.activeLens].Enter(entry)
 			} else if m.state == stateContext && len(m.actions) > 0 {
-				m.actions[m.selected].Run(m.contextFor)
+				m.actions[m.contextSelected].Run(m.contextFor)
 				m.state = stateEntries
 				m.selected = 0
+				m.scroll = 0
 			}
 
 		case tea.KeyEsc:
 			m.state = stateEntries
 			m.selected = 0
+			m.scroll = 0
 		}
 	}
 
@@ -144,13 +162,11 @@ func (m model) View() string {
 	border := lipgloss.RoundedBorder()
 
 	// Compute available space properly
-	totalHeight := m.height
-
 	tabHeight := 3
 	descHeight := 5
 	searchHeight := 3
 
-	listHeight := totalHeight - tabHeight - descHeight - searchHeight
+	listHeight := m.height - tabHeight - descHeight - searchHeight
 	if listHeight < 3 {
 		listHeight = 3
 	}
@@ -195,17 +211,35 @@ func (m model) View() string {
 	// LIST CONTENT
 	var listBuilder strings.Builder
 
+	maxVisible := listHeight - 2
+	if maxVisible < 1 {
+		maxVisible = 1
+	}
+
 	if m.state == stateContext {
-		for i, a := range m.actions {
+		// Keep selected within visible window
+		if m.contextSelected < m.contextScroll {
+			m.contextScroll = m.contextSelected
+		}
+		if m.contextSelected >= m.contextScroll+maxVisible {
+			m.contextScroll = m.contextSelected - maxVisible + 1
+		}
+
+		start := m.contextScroll
+		end := start + maxVisible
+		if end > len(m.actions) {
+			end = len(m.actions)
+		}
+
+		for i := start; i < end; i++ {
 			cursor := "  "
-			if i == m.selected {
+			if i == m.contextSelected {
 				cursor = "> "
 			}
-			listBuilder.WriteString(cursor + a.Name + "\n")
+			listBuilder.WriteString(cursor + m.actions[i].Name + "\n")
 		}
-	} else {
-		maxVisible := listHeight - 2
 
+	} else {
 		if m.selected < m.scroll {
 			m.scroll = m.selected
 		}
@@ -225,7 +259,11 @@ func (m model) View() string {
 				cursor = "> "
 			}
 			listBuilder.WriteString(
-				fmt.Sprintf("%s%s %s\n", cursor, m.entries[i].Icon, m.entries[i].Title),
+				fmt.Sprintf("%s%s %s\n",
+					cursor,
+					m.entries[i].Icon,
+					m.entries[i].Title,
+				),
 			)
 		}
 	}
@@ -233,10 +271,18 @@ func (m model) View() string {
 	listBox := listStyle.Render(listBuilder.String())
 
 	// Description
-	desc := ""
-	if len(m.entries) > 0 && m.selected < len(m.entries) {
-		desc = m.entries[m.selected].Description
+	var desc string
+
+	if m.state == stateEntries {
+		if len(m.entries) > 0 && m.selected < len(m.entries) {
+			desc = m.entries[m.selected].Description
+		}
+	} else if m.state == stateContext {
+		if len(m.actions) > 0 && m.contextSelected < len(m.actions) {
+			desc = "Action: " + m.actions[m.contextSelected].Name
+		}
 	}
+
 	descBox := descStyle.Render(desc)
 
 	searchBox := searchStyle.Render(m.search.View())
