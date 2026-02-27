@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/stikypiston/spyglass/lens"
 
@@ -75,12 +76,9 @@ func (a *applicationsLens) Enter(entry lens.Entry) error {
 			cmd.Stdout = os.Stdout
 			cmd.Stdin = os.Stdin
 			cmd.Stderr = os.Stderr
+			cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 
-			if err := cmd.Start(); err != nil {
-				return err
-			}
-
-			return cmd.Wait()
+			return cmd.Start()
 		}
 	}
 	return nil
@@ -95,7 +93,13 @@ func (a *applicationsLens) ContextActions(entry lens.Entry) []lens.Action {
 				actions = append(actions, lens.Action{
 					Name: c.Name,
 					Run: func(e lens.Entry) error {
-						return exec.Command("sh", "-c", command).Start()
+						cmd := exec.Command("sh", "-c", command)
+						cmd.Stdout = os.Stdout
+						cmd.Stdin = os.Stdin
+						cmd.Stderr = os.Stderr
+						cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+
+						return cmd.Start()
 					},
 				})
 			}
