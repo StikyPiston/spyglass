@@ -72,7 +72,15 @@ func (a *applicationsLens) Enter(entry lens.Entry) error {
 	for _, app := range a.apps {
 		if app.Name == entry.Title {
 			cmd := exec.Command("sh", "-c", app.Command)
-			return cmd.Start()
+			cmd.Stdout = os.Stdout
+			cmd.Stdin = os.Stdin
+			cmd.Stderr = os.Stderr
+
+			if err := cmd.Start(); err != nil {
+				return err
+			}
+
+			return cmd.Wait()
 		}
 	}
 	return nil
