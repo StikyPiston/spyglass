@@ -97,7 +97,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyTab:
 			// Switch lens
-			m.activeLens--
+			m.activeLens = (m.activeLens + 1) % len(m.lenses)
 			if m.activeLens < 0 {
 				m.activeLens = len(m.lenses) - 1
 			}
