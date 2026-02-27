@@ -175,24 +175,28 @@ func (m model) View() string {
 
 	tabStyle := lipgloss.NewStyle().
 		Border(border).
+		BorderForeground(lipgloss.Color("#313244")).
 		Width(contentWidth).
 		Height(tabHeight-2).
 		Padding(0, 1)
 
 	listStyle := lipgloss.NewStyle().
 		Border(border).
+		BorderForeground(lipgloss.Color("#313244")).
 		Width(contentWidth).
 		Height(listHeight-2).
 		Padding(0, 1)
 
 	descStyle := lipgloss.NewStyle().
 		Border(border).
+		BorderForeground(lipgloss.Color("#313244")).
 		Width(contentWidth).
 		Height(descHeight-2).
 		Padding(0, 1)
 
 	searchStyle := lipgloss.NewStyle().
 		Border(border).
+		BorderForeground(lipgloss.Color("#cba6f7")).
 		Width(contentWidth).
 		Height(searchHeight-2).
 		Padding(0, 1)
@@ -201,7 +205,10 @@ func (m model) View() string {
 	var tabs []string
 	for i, l := range m.lenses {
 		if i == m.activeLens {
-			tabs = append(tabs, "["+l.Name()+"]")
+			tabs = append(tabs, lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#cba6f7")).
+				Bold(true).
+				Render("["+l.Name()+"]"))
 		} else {
 			tabs = append(tabs, l.Name())
 		}
