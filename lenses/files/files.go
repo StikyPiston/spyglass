@@ -27,6 +27,7 @@ func (f *filesLens) Name() string {
 	return "Files"
 }
 
+// OPTIMISE: make it non-blocking if possible
 func (f *filesLens) index() {
 	filepath.WalkDir(f.home, func(path string, d os.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
