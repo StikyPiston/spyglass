@@ -74,24 +74,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.Type {
-
 		case tea.KeyCtrlC:
 			return m, tea.Quit
 
 		case tea.KeyTab:
-			m.activeLens = (m.activeLens + 1) % len(m.lenses)
-			m.selected = 0
-			m.scroll = 0
-			m.refresh()
-
-		case tea.KeyShiftTab:
 			m.activeLens--
 			if m.activeLens < 0 {
 				m.activeLens = len(m.lenses) - 1
 			}
 			m.selected = 0
 			m.scroll = 0
+			m.state = stateEntries
 			m.refresh()
+
+		case tea.KeyShiftTab:
+			if m.state == stateEntries && len(m.entries) > 0 {
+				entry := m.entries[m.selected]
+				m.contextFor = entry
+				m.actions = m.lenses[m.activeLens].ContextActions(entry)
+				if len(m.actions) > 0 {
+					m.state = stateContext
+					m.selected = 0
+				}
+			}
 
 		case tea.KeyUp:
 			if m.selected > 0 {
@@ -99,35 +104,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case tea.KeyDown:
-			if m.selected < len(m.entries)-1 {
+			max := 0
+			if m.state == stateEntries {
+				max = len(m.entries) - 1
+			} else {
+				max = len(m.actions) - 1
+			}
+			if m.selected < max {
 				m.selected++
 			}
 
 		case tea.KeyEnter:
-			if msg.String() == "shift+enter" {
-				if len(m.entries) > 0 {
-					entry := m.entries[m.selected]
-					m.contextFor = entry
-					m.actions = m.lenses[m.activeLens].ContextActions(entry)
-					m.state = stateContext
-					m.selected = 0
-				}
-				return m, nil
-			}
-
 			if m.state == stateEntries && len(m.entries) > 0 {
 				entry := m.entries[m.selected]
 				m.lenses[m.activeLens].Enter(entry)
-			} else if m.state == stateContext {
-				if len(m.actions) > 0 {
-					m.actions[m.selected].Run(m.contextFor)
-				}
+			} else if m.state == stateContext && len(m.actions) > 0 {
+				m.actions[m.selected].Run(m.contextFor)
 				m.state = stateEntries
-				m.refresh()
+				m.selected = 0
 			}
 
 		case tea.KeyEsc:
 			m.state = stateEntries
+			m.selected = 0
 		}
 	}
 
