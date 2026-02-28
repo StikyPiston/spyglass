@@ -1,6 +1,3 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
 name: Build Go project
 
 on:
@@ -12,28 +9,40 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.25.6'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25.6'
 
-    - name: Build
-      run: go build -v ./...
+      - name: Build
+        run: go build -v ./...
 
   nix-build:
-    runs-on: ubuntu-latest
+    name: Nix Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Nix
-      uses: cachix/install-nix-action@v31.9.1
-      with:
-        extra_nix_config: |
-          extra-experimental-features = nix-command flakes
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31.9.1
+        with:
+          extra_nix_config: |
+            extra-experimental-features = nix-command flakes
 
-    - name: Build from flake
-      run: nix build .#spyglass
+      - name: Build from flake
+        run: nix build .#spyglass
