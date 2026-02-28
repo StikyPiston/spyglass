@@ -39,7 +39,7 @@ func (a *applicationsLens) Name() string {
 
 func (a *applicationsLens) load() {
 	home, _ := os.UserHomeDir()
-	dir := filepath.Join(home, ".config", "spyglass", "files")
+	dir := filepath.Join(home, ".config", "spyglass", "applications")
 	files, _ := os.ReadDir(dir)
 
 	for _, f := range files {

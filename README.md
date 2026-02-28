@@ -35,6 +35,13 @@ go install github.com/stikypiston/spyglass@latest
 > [!NOTE]
 > Ensure that `~/go/bin` is in your $PATH
 
+## Basic Navigation
+
+- Type to search
+- Use `Tab` to switch Lenses (tabs)
+- Use `Up/Down` to select results
+- Use `Shift+Tab` to open the Context Menu
+
 ## Documentation
 
 For instructions on how to configure the default `Applications` lens, how to register new lenses, and how to create your own lens, see the [documentation home](/docs/home.md)
