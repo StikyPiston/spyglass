@@ -36,7 +36,7 @@
           meta = with pkgs.lib; {
             description = "An extensible search tool, inspired by Raycast and Vicinae";
             license = licenses.mit;
-            platforms = platforms.linux;
+            platforms = platforms.all;
           };
         };
 
