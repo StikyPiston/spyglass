@@ -62,13 +62,17 @@ func newModel() model {
 }
 
 func (m *model) refresh() {
-	// Only load the active Lens
 	if m.state == stateEntries {
-		if _, ok := m.loadedEntries[m.activeLens]; !ok || m.search.Value() != "" {
-			entries, _ := m.lenses[m.activeLens].Search(m.search.Value())
-			m.loadedEntries[m.activeLens] = entries
+		query := strings.TrimSpace(m.search.Value())
+
+		entries, _ := m.lenses[m.activeLens].Search(query)
+
+		if query == "" {
+			entries, _ = m.lenses[m.activeLens].Search("")
 		}
-		m.entries = m.loadedEntries[m.activeLens]
+
+		m.entries = entries
+
 		if m.selected >= len(m.entries) {
 			m.selected = len(m.entries) - 1
 		}
