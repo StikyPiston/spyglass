@@ -2,12 +2,12 @@
 
 ## Configuring lenses
 
-[Applications lens](docs/lenses/applications.md)
+[Applications lens](lenses/applications.md)
 
 ## Registering lenses
 
-[Register a Lens](docs/lens-registration.md)
+[Register a Lens](lens-registration.md)
 
 ## Creating a lens
 
-[Lens Development](docs/lens-development.md)
+[Lens Development](lens-development.md)

@@ -37,4 +37,4 @@ go install github.com/stikypiston/spyglass@latest
 
 ## Documentation
 
-For instructions on how to configure the default `Applications` lens, how to register new lenses, and how to create your own lens, see [[docs/home.md]]
+For instructions on how to configure the default `Applications` lens, how to register new lenses, and how to create your own lens, see the [documentation home](/docs/home.md)
