@@ -2,6 +2,7 @@ package power
 
 import (
 	"os/exec"
+	"syscall"
 
 	"github.com/stikypiston/spyglass/lens"
 )
@@ -66,6 +67,7 @@ func runPowerCommand(id string) error {
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 	cmd.Stdin = nil
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 
 	return cmd.Start()
 }
