@@ -34,3 +34,7 @@ go install github.com/stikypiston/spyglass@latest
 
 > [!NOTE]
 > Ensure that `~/go/bin` is in your $PATH
+
+## Documentation
+
+For instructions on how to configure the default `Applications` lens, how to register new lenses, and how to create your own lens, see [[docs/home.md]]
