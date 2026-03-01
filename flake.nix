@@ -19,6 +19,7 @@
             gopls
             gotools
             delve
+            just
           ];
         };
 
