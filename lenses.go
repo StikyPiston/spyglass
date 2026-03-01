@@ -6,6 +6,7 @@ import (
 
 	"github.com/stikypiston/spyglass/lenses/nerdfont"
 	"github.com/stikypiston/spyglass/lenses/power"
+	"github.com/stikypiston/spyglass/lenses/searxng"
 
 	"github.com/stikypiston/spyglass/lenses/files"
 )
@@ -13,6 +14,7 @@ import (
 var Lenses = []lens.Lens{
 	applications.New(),
 	power.New(),
+	searxng.New(),
 	nerdfont.New(),
 	files.New(),
 }
