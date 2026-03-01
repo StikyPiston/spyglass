@@ -3,6 +3,7 @@
 ## Configuring lenses
 
 [Applications lens](lenses/applications.md)
+[SearXNG lens](lenses/searxng.md)
 
 ## Registering lenses
 
