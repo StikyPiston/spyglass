@@ -45,7 +45,7 @@ type model struct {
 
 func newModel() model {
 	ti := textinput.New()
-	ti.Placeholder = "Search..."
+	ti.Placeholder = " Search..."
 	ti.Focus()
 	ti.CharLimit = 256
 
