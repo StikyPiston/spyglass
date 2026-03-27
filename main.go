@@ -185,7 +185,7 @@ func (m model) View() string {
 	descHeight := 5
 	searchHeight := 3
 
-	listHeight := m.height - tabHeight - descHeight - searchHeight
+	listHeight := m.height - 1 - tabHeight - descHeight - searchHeight
 	if listHeight < 3 {
 		listHeight = 3
 	}
