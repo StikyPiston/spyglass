@@ -4,6 +4,7 @@ import (
 	"github.com/indium114/spyglass/lens"
 	"github.com/indium114/spyglass/lenses/applications"
 
+	"github.com/indium114/spyglass/lenses/clipboard"
 	"github.com/indium114/spyglass/lenses/nerdfont"
 	"github.com/indium114/spyglass/lenses/power"
 	"github.com/indium114/spyglass/lenses/searxng"
@@ -14,6 +15,7 @@ import (
 var Lenses = []lens.Lens{
 	applications.New(),
 	power.New(),
+	clipboard.New(),
 	searxng.New(),
 	nerdfont.New(),
 	files.New(),
