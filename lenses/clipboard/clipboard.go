@@ -77,3 +77,35 @@ func (l *clipboardLens) Enter(e lens.Entry) error {
 
 	return nil
 }
+
+func (l *clipboardLens) ContextActions(e lens.Entry) []lens.Action {
+	return []lens.Action{
+		{
+			Name: "Copy to Clipboard",
+			Run: func(entry lens.Entry) error {
+				cmd := exec.Command("cliphist", "decode", entry.ID)
+				copyCmd := exec.Command("wl-copy")
+
+				pipe, err := cmd.StdoutPipe()
+				if err != nil {
+					return err
+				}
+
+				copyCmd.Stdin = pipe
+
+				if err := cmd.Start(); err != nil {
+					return err
+				}
+
+				return copyCmd.Start()
+			},
+		},
+		{
+			Name: "Clear History",
+			Run: func(entry lens.Entry) error {
+				cmd := exec.Command("cliphist", "wipe")
+				return cmd.Run()
+			},
+		},
+	}
+}
